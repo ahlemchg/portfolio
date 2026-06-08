@@ -9,6 +9,7 @@ import { socialLinks } from "@/data/social";
 import { getIconComponent } from "@/lib/icons";
 import { StarHeader } from "@/components/shared/star-header";
 
+
 export default function ContactPage() {
   return (
     <>

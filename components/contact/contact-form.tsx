@@ -60,17 +60,37 @@ export function ContactForm() {
   });
 
   // Form submission handler
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>, e?: React.BaseSyntheticEvent) {
+    // Empêcher le rechargement de la page
+    if (e) {
+      e.preventDefault();
+    }
+
     setIsSubmitting(true);
 
-    timeoutRef.current = setTimeout(() => {
-      // TODO: Wire up contact form backend (e.g. Resend, SendGrid)
-      void values;
-      setIsSubmitting(false);
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Erreur lors de l'envoi");
+      }
+
       setIsSubmitted(true);
       form.reset();
-      timeoutRef.current = null;
-    }, 1500);
+    } catch (err) {
+      console.error("Erreur d'envoi:", err);
+      alert(err instanceof Error ? err.message : "Erreur inattendue");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
