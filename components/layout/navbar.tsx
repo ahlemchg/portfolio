@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { ThemeSwitch } from "@/components/theme-switch";
@@ -23,7 +23,6 @@ const navbarVariants: Variants = {
       stiffness: 300,
       damping: 20,
       mass: 0.5,
-      duration: 0.1,
     },
   },
   exit: {
@@ -65,11 +64,13 @@ const notScrolledBgClass =
 
 // ─── Mobile dropdown menu ────────────────────────────────────────────────────
 
-const handleLinkClick = (href: string, onClose?: () => void) => {
+const handleLinkClick = (href: string, router: any, onClose?: () => void) => {
   return (e: React.MouseEvent) => {
     e.preventDefault();
     const [path, hash] = href.split("#");
-    if (path === window.location.pathname || (path === "/" && window.location.pathname === "/")) {
+    const currentPathname = window.location.pathname;
+
+    if (path === currentPathname || (path === "/" && currentPathname === "/")) {
       if (hash) {
         const element = document.getElementById(hash);
         if (element) {
@@ -79,7 +80,7 @@ const handleLinkClick = (href: string, onClose?: () => void) => {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
     } else {
-      window.location.href = href;
+      router.push(href);
     }
     if (onClose) {
       onClose();
@@ -97,6 +98,7 @@ function MobileMenu({
   toggleButtonRef: React.RefObject<HTMLButtonElement | null>;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -153,7 +155,7 @@ function MobileMenu({
                     <a
                       key={item.href}
                       href={item.href}
-                      onClick={handleLinkClick(item.href, onClose)}
+                      onClick={handleLinkClick(item.href, router, onClose)}
                       className={cn(
                         "block cursor-pointer rounded-xl px-4 py-3 text-[15px] font-medium transition-colors",
                         isActive
@@ -196,6 +198,7 @@ export function Navbar() {
   const [isMounted, setIsMounted] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
   const lastScrollYRef = useRef(0);
   const rafRef = useRef<number>(0);
@@ -286,30 +289,33 @@ export function Navbar() {
                 {/* Desktop Navigation */}
                 <div className="hidden flex-1 justify-center md:flex">
                   <nav aria-label="Main navigation" className="flex items-center gap-1">
-                    {navItems.map((item, i) => (
-                      <motion.div
-                        key={item.href}
-                        custom={i}
-                        variants={itemVariants}
-                        initial="hidden"
-                        animate="visible"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <a
-                          href={item.href}
-                          onClick={handleLinkClick(item.href)}
-                          className={cn(
-                            "variable-font cursor-pointer rounded-md px-4 py-2 text-sm font-medium transition-all hover:bg-muted/50 hover:text-primary",
-                            pathname === item.href
-                              ? "font-variation-settings: 'wght' 600 bg-muted/60 text-primary"
-                              : "text-muted-foreground"
-                          )}
+                    {navItems.map((item, i) => {
+                      const isActive = pathname === item.href;
+                      return (
+                        <motion.div
+                          key={item.href}
+                          custom={i}
+                          variants={itemVariants}
+                          initial="hidden"
+                          animate="visible"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                         >
-                          {item.title}
-                        </a>
-                      </motion.div>
-                    ))}
+                          <a
+                            href={item.href}
+                            onClick={handleLinkClick(item.href, router)}
+                            className={cn(
+                              "variable-font cursor-pointer rounded-md px-4 py-2 text-sm font-medium transition-all hover:bg-muted/50 hover:text-primary",
+                              isActive
+                                ? "bg-muted/60 text-primary [font-variation-settings:'wght'_600]"
+                                : "text-muted-foreground"
+                            )}
+                          >
+                            {item.title}
+                          </a>
+                        </motion.div>
+                      );
+                    })}
                   </nav>
                 </div>
 

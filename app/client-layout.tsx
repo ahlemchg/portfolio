@@ -56,10 +56,11 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
           enableSystem
           disableTransitionOnChange
         >
-          {/* Temporaire : SmoothScrollProvider désactivé pour éviter le rechargement infini */}
           <div className="relative flex min-h-screen flex-col">
             <Navbar />
-            <main className="flex-1 pt-16">{children}</main>
+            <main className="flex-1 pt-16">
+              <SmoothScrollProvider>{children}</SmoothScrollProvider>
+            </main>
             <Footer />
           </div>
           <FloatingSocials />

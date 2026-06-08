@@ -37,16 +37,6 @@ const formSchema = z.object({
 export function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Cleanup timeout if component unmounts mid-submission
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
 
   // Initialize form with validation
   const form = useForm<z.infer<typeof formSchema>>({
@@ -77,7 +67,13 @@ export function ContactForm() {
         body: JSON.stringify(values),
       });
 
-      const result = await response.json();
+      let result;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        result = await response.json();
+      } else {
+        result = { error: await response.text() };
+      }
 
       if (!response.ok) {
         throw new Error(result.error || "Erreur lors de l'envoi");
@@ -87,7 +83,7 @@ export function ContactForm() {
       form.reset();
     } catch (err) {
       console.error("Erreur d'envoi:", err);
-      alert(err instanceof Error ? err.message : "Erreur inattendue");
+      alert(err instanceof Error ? err.message : "Une erreur inattendue est survenue");
     } finally {
       setIsSubmitting(false);
     }

@@ -37,19 +37,19 @@ export function ThreeDCard({ children, className }: ThreeDCardProps) {
   };
 
   return (
-    <motion.div
-      ref={cardRef}
-      className={className}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{
-        transformStyle: "preserve-3d",
-        perspective: 1000,
-        rotateX: smoothRotateX,
-        rotateY: smoothRotateY,
-      }}
-    >
-      {children}
-    </motion.div>
+    <div style={{ perspective: "1000px" }} className={className}>
+      <motion.div
+        ref={cardRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          transformStyle: "preserve-3d" as any,
+          rotateX: smoothRotateX,
+          rotateY: smoothRotateY,
+        }}
+      >
+        {children}
+      </motion.div>
+    </div>
   );
 }
